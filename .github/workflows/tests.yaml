@@ -24,10 +24,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # FreeCAD AppImage version to use for integration tests
-  FREECAD_VERSION: "1.0.0"
-
 jobs:
   # ==========================================================================
   # Unit Tests (pytest - no FreeCAD required)
@@ -80,30 +76,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Cache FreeCAD AppImage
-        uses: actions/cache@v5
+      - name: Setup FreeCAD
+        uses: ./.github/actions/setup-freecad
         with:
-          path: ~/FreeCAD
-          key: freecad-appimage-${{ env.FREECAD_VERSION }}
-          restore-keys: |
-            freecad-appimage-
-
-      - name: Download FreeCAD AppImage
-        run: |
-          mkdir -p ~/FreeCAD
-          if [ ! -f ~/FreeCAD/FreeCAD.AppImage ]; then
-            echo "Downloading FreeCAD ${{ env.FREECAD_VERSION }} AppImage..."
-            wget -q "https://github.com/FreeCAD/FreeCAD/releases/download/${{ env.FREECAD_VERSION }}/FreeCAD_${{ env.FREECAD_VERSION }}-conda-Linux-x86_64.AppImage" \
-              -O ~/FreeCAD/FreeCAD.AppImage
-            chmod +x ~/FreeCAD/FreeCAD.AppImage
-          else
-            echo "Using cached FreeCAD AppImage"
-          fi
+          freecad-tag: "1.0.0"
 
       - name: Run FreeCAD integration tests
         run: |
           echo "Running FreeCAD integration tests..."
-          ~/FreeCAD/FreeCAD.AppImage -c tests/freecad/test_multi_export.py
+          freecadcmd tests/freecad/test_multi_export.py
 
   # ==========================================================================
   # All Tests Summary

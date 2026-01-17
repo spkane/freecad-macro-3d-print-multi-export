@@ -1,0 +1,1 @@
+"""Just command tests package."""

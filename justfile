@@ -5,6 +5,7 @@
 # or `just list-<module>` to see commands in a specific module:
 #   just list-dev           - Development utilities
 #   just list-documentation - Documentation commands
+#   just list-install       - Installation commands
 #   just list-quality       - Code quality commands
 #   just list-release       - Release and tagging commands
 #   just list-testing       - Testing commands
@@ -14,6 +15,7 @@
 # Import modules
 mod dev 'just/dev.just'
 mod documentation 'just/documentation.just'
+mod install 'just/install.just'
 mod quality 'just/quality.just'
 mod release 'just/release.just'
 mod testing 'just/testing.just'
@@ -43,7 +45,7 @@ test: (testing::unit)
     @echo "Tests complete!"
 
 # Run unit tests with coverage
-test-cov: (testing::unit-cov)
+test-cov: (testing::cov)
     @echo "Coverage report generated!"
 
 # =============================================================================
@@ -73,3 +75,7 @@ list-release:
 # List testing commands
 list-testing:
     @just --list testing
+
+# List installation commands
+list-install:
+    @just --list install

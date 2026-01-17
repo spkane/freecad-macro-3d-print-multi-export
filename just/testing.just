@@ -16,11 +16,11 @@ unit:
     cd {{project_root}} && pytest tests/unit -v
 
 # Run unit tests with coverage
-unit-cov:
+cov:
     cd {{project_root}} && pytest tests/unit -v --cov=macro/Multi_Export --cov-report=term-missing --cov-report=html
 
 # Run unit tests in watch mode (requires pytest-watch)
-unit-watch:
+watch:
     cd {{project_root}} && pytest-watch tests/unit
 
 # =============================================================================
@@ -62,11 +62,133 @@ quick: unit
 # Test Setup
 # =============================================================================
 
-# Install test dependencies
-install:
-    pip install -e "{{project_root}}[test]"
-
 # Check if test dependencies are installed
 check-deps:
     @python -c "import pytest" 2>/dev/null && echo "✓ pytest installed" || echo "✗ pytest not installed (run 'just testing::install')"
     @python -c "import pytest_cov" 2>/dev/null && echo "✓ pytest-cov installed" || echo "✗ pytest-cov not installed"
+
+# =============================================================================
+# Just Command Tests
+# =============================================================================
+
+# Run just command syntax tests (fast, validates all commands parse correctly)
+just-syntax:
+    cd {{project_root}} && pytest tests/just_commands -m "just_syntax" -v
+
+# Run just command runtime tests (slower, actually executes commands)
+just-runtime:
+    cd {{project_root}} && pytest tests/just_commands -m "just_runtime and not slow" -v
+
+# Run all just command tests
+just-all:
+    cd {{project_root}} && pytest tests/just_commands -v
+
+# =============================================================================
+# Release Testing
+# =============================================================================
+
+# Run all tests required before a release can be created
+release-test:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    echo "============================================================"
+    echo "  RELEASE TEST SUITE"
+    echo "  All tests must pass before creating a release"
+    echo "============================================================"
+    echo ""
+
+    # Track overall test results
+    TESTS_PASSED=true
+    declare -a FAILED_NAMES=()
+    declare -a FAILED_COMMANDS=()
+
+    # Helper function to record test failure
+    record_failure() {
+        TESTS_PASSED=false
+        FAILED_NAMES+=("$1")
+        FAILED_COMMANDS+=("$2")
+    }
+
+    # -------------------------------------------------------------------------
+    # Step 1: Unit Tests with Coverage
+    # -------------------------------------------------------------------------
+    echo "============================================================"
+    echo "  Step 1/3: Unit Tests with Coverage"
+    echo "============================================================"
+    echo ""
+
+    if just testing::cov; then
+        echo ""
+        echo "✓ Unit tests passed"
+    else
+        echo ""
+        echo "✗ Unit tests FAILED"
+        record_failure "Unit tests with coverage" "just testing::cov"
+    fi
+    echo ""
+
+    # -------------------------------------------------------------------------
+    # Step 2: Just Command Tests
+    # -------------------------------------------------------------------------
+    echo "============================================================"
+    echo "  Step 2/3: Just Command Tests"
+    echo "============================================================"
+    echo ""
+
+    if just testing::just-all; then
+        echo ""
+        echo "✓ Just command tests passed"
+    else
+        echo ""
+        echo "✗ Just command tests FAILED"
+        record_failure "Just command tests" "just testing::just-all"
+    fi
+    echo ""
+
+    # -------------------------------------------------------------------------
+    # Step 3: Pre-commit Checks
+    # -------------------------------------------------------------------------
+    echo "============================================================"
+    echo "  Step 3/3: Pre-commit Checks"
+    echo "============================================================"
+    echo ""
+
+    if just quality::check; then
+        echo ""
+        echo "✓ Pre-commit checks passed"
+    else
+        echo ""
+        echo "✗ Pre-commit checks FAILED"
+        record_failure "Pre-commit checks" "just quality::check"
+    fi
+    echo ""
+
+    # -------------------------------------------------------------------------
+    # Summary
+    # -------------------------------------------------------------------------
+    echo "============================================================"
+    echo "  RELEASE TEST SUMMARY"
+    echo "============================================================"
+    echo ""
+
+    if [ "$TESTS_PASSED" = true ]; then
+        echo "✓ ALL TESTS PASSED - Ready for release!"
+        echo ""
+        echo "Next steps:"
+        echo "  1. Update RELEASE_NOTES.md with version section"
+        echo "  2. Create release tag: just release::tag <version>"
+    else
+        echo "✗ SOME TESTS FAILED - Cannot proceed with release"
+        echo ""
+        echo "Failed tests:"
+        for i in "${!FAILED_NAMES[@]}"; do
+            echo "  ✗ ${FAILED_NAMES[$i]}"
+        done
+        echo ""
+        echo "To recreate failures, run:"
+        for i in "${!FAILED_COMMANDS[@]}"; do
+            echo "  ${FAILED_COMMANDS[$i]}"
+        done
+        exit 1
+    fi

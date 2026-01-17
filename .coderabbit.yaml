@@ -1,0 +1,162 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en-US
+
+# Tone instructions for reviews
+tone_instructions: |
+  Be concise and direct. Focus on actionable feedback.
+  This is a FreeCAD macro project using modern Python tooling (ruff, mypy, pytest).
+  The macro runs inside FreeCAD's Python environment.
+
+early_access: false
+
+# Enable or disable reviews
+reviews:
+  # Enable automated code reviews
+  auto_review:
+    enabled: true
+    # Don't review drafts until ready
+    drafts: false
+    # Review base branches (PRs to main)
+    base_branches:
+      - main
+      - master
+
+  # Review profile - assertive catches more issues
+  profile: assertive
+
+  # Request changes when issues found
+  request_changes_workflow: true
+
+  # High-level summary in PR comments
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+
+  # Add poem to review (disabled - keep it professional)
+  poem: false
+
+  # Collapse walkthrough in large PRs
+  collapse_walkthrough: true
+
+  # Review labeling
+  labeling_instructions:
+    - label: "security"
+      instructions: "Apply when security vulnerabilities are found"
+    - label: "breaking-change"
+      instructions: "Apply when changes break backward compatibility"
+    - label: "documentation"
+      instructions: "Apply when documentation changes are needed"
+
+  # Paths to always review carefully
+  path_instructions:
+    - path: "macro/**/*.py"
+      instructions: >
+        This is the FreeCAD macro code. Pay attention to:
+        - FreeCAD API usage patterns
+        - Error handling for CAD operations
+        - Proper use of FreeCAD.ActiveDocument
+        - GUI vs console mode compatibility
+    - path: "macro/**/*.FCMacro"
+      instructions: >
+        FreeCAD macro entry point. This file is copied to FreeCAD's Macro directory.
+        It runs in FreeCAD's Python environment with access to FreeCAD, Part, etc.
+    - path: "tests/**/*.py"
+      instructions: >
+        Test files. Ensure good test coverage and clear assertions.
+        Unit tests run without FreeCAD. FreeCAD tests require the AppImage.
+    - path: ".github/workflows/**/*.yaml"
+      instructions: >
+        GitHub Actions workflows. Check for:
+        - Proper caching configuration
+        - Security of secrets handling
+        - Correct job dependencies
+
+        INTENTIONAL PATTERNS (do not flag as issues):
+        - continue-on-error: true on test steps is intentional during stabilization
+        - upload-artifact@v6 and download-artifact@v7 work on GitHub-hosted runners
+        - Actions version jumps (v4 to v6/v7) are intentional Dependabot updates
+    - path: "pyproject.toml"
+      instructions: >
+        Project configuration. Watch for:
+        - Dependency version constraints
+        - Tool configuration consistency (ruff, mypy, pytest)
+
+        This macro project uses pip for dependencies (no uv.lock).
+    - path: ".mise.toml"
+      instructions: >
+        Tool version management via mise. All versions use fuzzy matching:
+        - "0.9" means "0.9.x" (allows patch updates)
+        - "1.43" means "1.43.x" (allows patch updates)
+        This is consistent and intentional. Do not flag as inconsistent pinning.
+    - path: "justfile"
+      instructions: >
+        Main task runner configuration using just (https://just.systems/).
+        Imports modules from the just/ directory.
+    - path: "just/*.just"
+      instructions: >
+        Just module files for task automation.
+
+        INTENTIONAL PATTERN - Heredoc indentation:
+        - Heredoc content inside recipes IS indented with 4 spaces (matching recipe body)
+        - This is CORRECT - just automatically strips leading indentation from heredocs
+        - Do NOT suggest adding more indentation to heredoc content
+        - Do NOT suggest removing indentation from heredoc content
+        - The 4-space indent prevents just from parsing embedded code as justfile syntax
+        - Example: Python code in heredocs uses 4-space indent, just outputs it unindented
+
+        INTENTIONAL PATTERN - Module paths:
+        - Modules use `project_root := justfile_directory()` to get project root
+        - Do NOT suggest using $(pwd) - it returns the wrong directory in modules
+
+  # Tools to use for analysis
+  tools:
+    # Python-specific tools
+    ruff:
+      enabled: true
+    # General tools
+    shellcheck:
+      enabled: true
+    markdownlint:
+      enabled: true
+    yamllint:
+      enabled: true
+
+  # Files and paths to ignore in reviews (! prefix = exclude)
+  path_filters:
+    # Generated/cached files
+    - "!**/.mypy_cache/**"
+    - "!**/.pytest_cache/**"
+    - "!**/.ruff_cache/**"
+    - "!**/__pycache__/**"
+    - "!**/*.pyc"
+    # Virtual environments
+    - "!.venv/**"
+    - "!venv/**"
+    # IDE settings (except shared configs)
+    - "!.idea/**"
+    # Build artifacts
+    - "!dist/**"
+    - "!build/**"
+    - "!*.egg-info/**"
+    # Documentation build output
+    - "!site/**"
+    # Secrets baseline (reviewed separately)
+    - "!.secrets.baseline"
+
+# Chat configuration
+chat:
+  auto_reply: true
+
+# Knowledge base for context
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  pull_requests:
+    scope: auto

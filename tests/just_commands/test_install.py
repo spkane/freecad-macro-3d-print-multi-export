@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
+from tests.just_commands.conftest import assert_command_executed
+
 if TYPE_CHECKING:
     from tests.just_commands.conftest import JustRunner
 
@@ -45,8 +47,7 @@ class TestInstallRuntime:
         """Status command should run and show installation status."""
         result = just.run("install::status", timeout=30)
         # Should execute without crashing
-        assert result.returncode != 127, f"Command not found: {result.stderr}"
-        assert result.returncode != -1, f"Timed out: {result.stderr}"
+        assert_command_executed(result, "install::status")
         # Should show some status output
         assert (
             "Installation Status" in result.output or "INSTALLED" in result.output or "NOT INSTALLED" in result.output

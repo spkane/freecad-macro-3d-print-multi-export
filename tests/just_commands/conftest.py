@@ -121,7 +121,13 @@ class JustRunner:
                 success=result.returncode == 0,
             )
         except subprocess.TimeoutExpired as e:
-            stdout_val = str(e.stdout) if e.stdout else ""
+            # Normalize e.stdout to a string: decode if bytes, use empty string if None
+            if e.stdout is None:
+                stdout_val = ""
+            elif isinstance(e.stdout, bytes):
+                stdout_val = e.stdout.decode("utf-8", errors="replace")
+            else:
+                stdout_val = str(e.stdout)
             return JustResult(
                 command=command,
                 returncode=-1,

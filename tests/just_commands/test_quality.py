@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
+from tests.just_commands.conftest import assert_command_executed
+
 if TYPE_CHECKING:
     from tests.just_commands.conftest import JustRunner
 
@@ -39,13 +41,11 @@ class TestQualityRuntime:
         """Lint command should run without crashing."""
         result = just.run("quality::lint", timeout=120)
         # Lint may find issues, but should execute without crashing
-        assert result.returncode != 127, f"Lint command not found: {result.stderr}"
-        assert result.returncode != -1, f"Lint timed out: {result.stderr}"
+        assert_command_executed(result, "quality::lint")
 
     @pytest.mark.just_runtime
     def test_format_runs(self, just: JustRunner) -> None:
         """Format command should run without crashing."""
         result = just.run("quality::format", timeout=60)
         # Format should execute without crashing
-        assert result.returncode != 127, f"Format command not found: {result.stderr}"
-        assert result.returncode != -1, f"Format timed out: {result.stderr}"
+        assert_command_executed(result, "quality::format")

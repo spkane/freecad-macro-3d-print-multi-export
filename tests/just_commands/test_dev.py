@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
+from tests.just_commands.conftest import assert_command_executed
+
 if TYPE_CHECKING:
     from tests.just_commands.conftest import JustRunner
 
@@ -38,7 +40,8 @@ class TestDevRuntime:
     def test_tree_shows_structure(self, just: JustRunner) -> None:
         """Tree command should show project structure."""
         result = just.run("dev::tree", timeout=30)
-        # Tree command may fail if tree is not installed, but should execute
+        # Tree command may fail if tree is not installed, but should at least execute
+        assert_command_executed(result, "dev::tree")
         if result.success:
             # Should show some directories
             assert "macro" in result.stdout or "tests" in result.stdout

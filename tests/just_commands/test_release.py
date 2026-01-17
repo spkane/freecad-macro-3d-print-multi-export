@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 import pytest
 
+from tests.just_commands.conftest import assert_command_executed
+
 if TYPE_CHECKING:
     from tests.just_commands.conftest import JustRunner
 
@@ -50,5 +52,4 @@ class TestReleaseRuntime:
         """List tags command should run without crashing."""
         result = just.run("release::list-tags", timeout=30)
         # Should execute without crashing (may have no tags)
-        assert result.returncode != 127, f"Command not found: {result.stderr}"
-        assert result.returncode != -1, f"Timed out: {result.stderr}"
+        assert_command_executed(result, "release::list-tags")

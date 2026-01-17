@@ -41,15 +41,56 @@ freecad-macro-3d-print-multi-export/
 └── pyproject.toml            # Project configuration
 ```
 
-### Code Architecture
+---
 
-The macro is split into three layers for testability:
+## Macro Module Layout
 
-1. **multi_export_core.py** - Pure Python logic (format definitions, validation, filename sanitization). Testable with standard pytest.
+### Why This Structure?
 
-2. **multi_export_fc.py** - FreeCAD-dependent logic (export functions, shape handling, MultiExporter class). Testable inside FreeCAD.
+The macro is split into three layers to enable automated testing:
+
+1. **multi_export_core.py** - Pure Python logic (format definitions, validation, filename sanitization). Testable with standard pytest - no FreeCAD installation required.
+
+2. **multi_export_fc.py** - FreeCAD-dependent logic (export functions, shape handling, MultiExporter class). Testable inside FreeCAD using its test framework.
 
 3. **MultiExport.FCMacro** - GUI dialog and entry point. Imports from modules when available, falls back to embedded definitions for standalone use.
+
+### Why `__init__.py` is Required
+
+The `__init__.py` file makes the macro directory a proper Python package. This is required for:
+
+- **Import resolution**: Allows `from multi_export_core import ...` to work
+- **Package metadata**: Defines `__version__`, `__author__`, etc.
+- **Test discovery**: pytest can properly discover and import modules
+- **Consistency**: Both macro repos use the same structure
+
+### Standalone Macro Support
+
+When users install just the `.FCMacro` file (without the module files), the macro still works because:
+
+```python
+# In MultiExport.FCMacro
+_USE_MODULES = False
+try:
+    from multi_export_core import (
+        EXPORT_FORMATS, ExportFormat, sanitize_filename, ...
+    )
+    from multi_export_fc import MultiExporter, export_shape, ...
+    _USE_MODULES = True
+except ImportError:
+    pass
+
+if not _USE_MODULES:
+    # Fallback: embedded definitions
+    @dataclass
+    class ExportFormat:
+        ...
+```
+
+This fallback pattern ensures the macro works in both scenarios:
+
+- **Development/Full install**: Uses modular code (testable)
+- **Standalone install**: Uses embedded definitions (works without modules)
 
 ---
 

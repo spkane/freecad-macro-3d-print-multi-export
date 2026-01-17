@@ -1,0 +1,14 @@
+# Technical terms that are not typos
+freecad
+fcstd
+mcp
+vertexes
+Vertexes
+recomputation
+partdesign
+
+# GitHub usernames and project names
+spkane
+
+# File extensions
+md

@@ -1,0 +1,36 @@
+{
+  "recommendations": [
+
+    // Python development
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.mypy-type-checker",
+    "charliermarsh.ruff",
+
+    // Just (command runner)
+    "skellock.just",
+
+    // Docker
+    "ms-azuretools.vscode-docker",
+    "exiasr.hadolint",
+
+    // GitHub Actions
+    "GitHub.vscode-github-actions",
+
+    // Configuration files
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml",
+
+    // Markdown
+    "DavidAnson.vscode-markdownlint",
+
+    // Shell scripts
+    "timonwong.shellcheck",
+
+    // Git
+    "eamodio.gitlens",
+
+    // Spell checking
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

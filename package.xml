@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+
+    <name>Multi Export</name>
+    <description>Export selected FreeCAD objects to multiple file formats (STL, STEP, 3MF, OBJ, IGES, BREP, PLY, AMF) simultaneously with a single click.</description>
+    <icon>macro/Multi_Export/MultiExport.svg</icon>
+
+    <version>0.6.1</version>
+    <date>2026-01-12</date>
+
+    <maintainer email="spkane@gmail.com">Sean P. Kane</maintainer>
+    <author email="spkane@gmail.com">Sean P. Kane</author>
+
+    <license file="LICENSE">MIT</license>
+
+    <freecadmin>0.21</freecadmin>
+
+    <url type="repository" branch="main">https://github.com/spkane/freecad-macro-3d-print-multi-export</url>
+    <url type="bugtracker">https://github.com/spkane/freecad-macro-3d-print-multi-export/issues</url>
+    <url type="readme">https://github.com/spkane/freecad-macro-3d-print-multi-export/blob/main/README.md</url>
+    <url type="documentation">https://github.com/spkane/freecad-macro-3d-print-multi-export#readme</url>
+
+    <tag>macro</tag>
+    <tag>export</tag>
+    <tag>3D printing</tag>
+    <tag>STL</tag>
+    <tag>STEP</tag>
+    <tag>3MF</tag>
+    <tag>batch</tag>
+
+    <content>
+
+        <macro>
+            <name>Multi Export</name>
+            <version>0.6.1</version>
+            <date>2026-01-12</date>
+            <description>Export selected FreeCAD objects to multiple file formats (STL, STEP, 3MF, OBJ, IGES, BREP, PLY, AMF) simultaneously with a single click.</description>
+            <subdirectory>./macro/Multi_Export/</subdirectory>
+            <file>MultiExport.FCMacro</file>
+            <icon>MultiExport.svg</icon>
+        </macro>
+
+    </content>
+
+</package>

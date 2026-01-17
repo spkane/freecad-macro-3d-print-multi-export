@@ -1,0 +1,128 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "macro/**/*.py"
+      - "macro/**/*.FCMacro"
+      - "tests/**/*.py"
+      - "pyproject.toml"
+      - ".github/workflows/tests.yaml"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "macro/**/*.py"
+      - "macro/**/*.FCMacro"
+      - "tests/**/*.py"
+      - "pyproject.toml"
+      - ".github/workflows/tests.yaml"
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # FreeCAD AppImage version to use for integration tests
+  FREECAD_VERSION: "1.0.0"
+
+jobs:
+  # ==========================================================================
+  # Unit Tests (pytest - no FreeCAD required)
+  # ==========================================================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Install test dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --tb=short
+
+      - name: Run unit tests with coverage
+        run: pytest tests/unit/ -v --cov=macro/Multi_Export --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  # ==========================================================================
+  # FreeCAD Integration Tests (requires FreeCAD)
+  # ==========================================================================
+  freecad-tests:
+    name: FreeCAD Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Cache FreeCAD AppImage
+        uses: actions/cache@v5
+        with:
+          path: ~/FreeCAD
+          key: freecad-appimage-${{ env.FREECAD_VERSION }}
+          restore-keys: |
+            freecad-appimage-
+
+      - name: Download FreeCAD AppImage
+        run: |
+          mkdir -p ~/FreeCAD
+          if [ ! -f ~/FreeCAD/FreeCAD.AppImage ]; then
+            echo "Downloading FreeCAD ${{ env.FREECAD_VERSION }} AppImage..."
+            wget -q "https://github.com/FreeCAD/FreeCAD/releases/download/${{ env.FREECAD_VERSION }}/FreeCAD_${{ env.FREECAD_VERSION }}-conda-Linux-x86_64.AppImage" \
+              -O ~/FreeCAD/FreeCAD.AppImage
+            chmod +x ~/FreeCAD/FreeCAD.AppImage
+          else
+            echo "Using cached FreeCAD AppImage"
+          fi
+
+      - name: Run FreeCAD integration tests
+        run: |
+          echo "Running FreeCAD integration tests..."
+          ~/FreeCAD/FreeCAD.AppImage -c tests/freecad/test_multi_export.py
+
+  # ==========================================================================
+  # All Tests Summary
+  # ==========================================================================
+  tests-complete:
+    name: Tests Complete
+    runs-on: ubuntu-latest
+    needs: [unit-tests, freecad-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.unit-tests.result }}" != "success" ]; then
+            echo "Unit tests failed!"
+            exit 1
+          fi
+          if [ "${{ needs.freecad-tests.result }}" != "success" ]; then
+            echo "FreeCAD integration tests failed!"
+            exit 1
+          fi
+          echo "All tests passed!"

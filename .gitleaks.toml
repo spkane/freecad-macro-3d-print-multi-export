@@ -1,0 +1,69 @@
+# Gitleaks Configuration
+# https://github.com/gitleaks/gitleaks
+#
+# This configuration extends the default rules with project-specific settings.
+
+title = "FreeCAD Macro Gitleaks Configuration"
+
+[extend]
+# Extend the default gitleaks configuration
+useDefault = true
+
+# ============================================================================
+# Custom Rules
+# ============================================================================
+
+[[rules]]
+id = "generic-api-key-assignment"
+description = "Generic API key assignment in code"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret|api[_-]?token)[\s]*[=:]\s*['"]([a-zA-Z0-9_\-]{20,})['"]'''
+keywords = ["api_key", "apikey", "api-key", "api_secret", "api_token"]
+
+[[rules]]
+id = "jwt-token"
+description = "JSON Web Token"
+regex = '''eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*'''
+keywords = ["eyJ"]
+
+[[rules]]
+id = "private-key-header"
+description = "Private key file content"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY( BLOCK)?-----'''
+keywords = ["BEGIN", "PRIVATE KEY"]
+
+# ============================================================================
+# Allowlist - Paths, Commits, and Patterns to Ignore
+# ============================================================================
+
+[allowlist]
+description = "Global allowlist"
+
+# Paths to ignore
+paths = [
+    '''\.gitleaks\.toml$''',
+    '''\.pre-commit-config\.yaml$''',
+    '''(^|/)tests?/''',
+    '''(^|/)test_.*\.py$''',
+    '''\.md$''',             # Documentation files
+    '''package-lock\.json$''',
+]
+
+# Regex patterns to ignore (for false positives)
+regexes = [
+    # Example/placeholder values
+    '''(?i)(example|sample|placeholder|dummy|fake|test|mock)''',
+    # Documentation patterns
+    '''your[-_]?(api)?[-_]?(key|token|secret)[-_]?here''',
+    '''<.*?(key|token|secret|password).*?>''',
+    '''xxx+''',
+    '''CHANGE[-_]?ME''',
+    # Common false positives
+    '''(?i)public[-_]?key''',  # Public keys are not secrets
+]
+
+# Specific strings to ignore
+stopwords = [
+    "AKIAIOSFODNN7EXAMPLE",  # AWS example key
+    "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",  # AWS example secret
+    "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",  # GitHub placeholder
+]

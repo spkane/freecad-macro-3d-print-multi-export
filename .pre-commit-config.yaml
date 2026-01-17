@@ -1,0 +1,152 @@
+# Pre-commit hooks configuration
+# https://pre-commit.com/
+
+default_language_version:
+  python: python3.11  # Must match FreeCAD's bundled Python version
+
+repos:
+  # ==========================================================================
+  # General File Hygiene
+  # ==========================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: \.md$  # Allow trailing spaces in markdown for line breaks
+      - id: end-of-file-fixer
+      - id: check-xml
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-json
+        exclude: ^\.vscode/.*\.json$  # VS Code uses JSONC (JSON with Comments)
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
+      - id: check-ast  # Check Python syntax
+        types: [text]
+        files: \.(py|FCMacro)$
+
+  # JSON5/JSONC validation for VS Code config files (supports comments)
+  - repo: https://github.com/maresb/check-json5
+    rev: v1.0.1
+    hooks:
+      - id: check-json5
+        files: ^\.vscode/.*\.json$  # Only check VS Code JSONC files
+
+  # ==========================================================================
+  # Python - Linting and Formatting (FCMacro files)
+  # ==========================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.11
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, text]
+        files: \.(py|FCMacro)$
+      - id: ruff-format
+        types_or: [python, text]
+        files: \.(py|FCMacro)$
+
+  # ==========================================================================
+  # Python - Security Scanning
+  # ==========================================================================
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.2
+    hooks:
+      - id: bandit
+        args: [-r, macro]
+        types: [text]
+        files: \.(py|FCMacro)$
+        exclude: ^tests/
+
+  # ==========================================================================
+  # Secrets Detection
+  # ==========================================================================
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secrets scanner)
+        args: [--config, .gitleaks.toml, --verbose]
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: detect-secrets (baseline scan)
+        args:
+          - --baseline
+          - .secrets.baseline
+          - --exclude-files
+          - '\.secrets\.baseline$'
+          - --exclude-files
+          - '\.gitleaks\.toml$'
+
+  # ==========================================================================
+  # Markdown Linting
+  # ==========================================================================
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.20.0
+    hooks:
+      - id: markdownlint-cli2
+        name: markdownlint (linter)
+        args: [--fix]
+
+  # ==========================================================================
+  # Spell Checking
+  # ==========================================================================
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli
+        args:
+          - --ignore-words
+          - .codespell-ignore-words.txt
+          - --skip
+          - "*.lock,*.json,.secrets.baseline"
+
+  # ==========================================================================
+  # Configuration Validation
+  # ==========================================================================
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.36.0
+    hooks:
+      - id: check-github-workflows
+        name: validate GitHub workflows
+
+  # ==========================================================================
+  # GitHub Actions Linting
+  # ==========================================================================
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.10
+    hooks:
+      - id: actionlint
+        name: actionlint (GitHub Actions linter)
+
+  # ==========================================================================
+  # Commit Message Linting
+  # ==========================================================================
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.11.1
+    hooks:
+      - id: commitizen
+        name: commitizen (commit format)
+        stages: [commit-msg]
+
+# ==========================================================================
+# CI Configuration
+# ==========================================================================
+ci:
+  autoupdate_schedule: monthly
+  autoupdate_commit_msg: "chore(deps): update pre-commit hooks"
+  skip:
+    - no-commit-to-branch  # Always fails in CI (we're on main/master)

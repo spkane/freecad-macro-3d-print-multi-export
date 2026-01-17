@@ -1,0 +1,21 @@
+# mise tool configuration
+# https://mise.jdx.dev/
+
+[tools]
+# Python 3.11 is required for FreeCAD macros
+python = "3.11"
+# Pin tool versions for reproducible CI builds
+uv = "0.9"              # Python package manager
+just = "1.43"           # task runner
+pre-commit = "4.5"      # pre-commit hooks
+github-cli = "2.74"     # GitHub CLI for releases
+
+# Security and code quality tools
+gitleaks = "8.30"       # secrets scanner
+actionlint = "1.7"      # GitHub Actions linter
+
+# Markdown tools
+markdownlint-cli2 = "0.20"  # markdown linter
+
+[settings]
+experimental = true

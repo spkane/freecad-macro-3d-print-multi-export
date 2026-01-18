@@ -59,12 +59,12 @@ quick: unit
     @echo "Quick tests complete!"
 
 # =============================================================================
-# Test Setup
+# Test Utilities
 # =============================================================================
 
 # Check if test dependencies are installed
 check-deps:
-    @python -c "import pytest" 2>/dev/null && echo "✓ pytest installed" || echo "✗ pytest not installed (run 'just testing::install')"
+    @python -c "import pytest" 2>/dev/null && echo "✓ pytest installed" || echo "✗ pytest not installed"
     @python -c "import pytest_cov" 2>/dev/null && echo "✓ pytest-cov installed" || echo "✗ pytest-cov not installed"
 
 # =============================================================================

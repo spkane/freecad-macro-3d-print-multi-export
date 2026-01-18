@@ -39,4 +39,5 @@ class TestDocumentationRuntime:
         result = just.run("documentation::build", timeout=120)
         # Build may fail if mkdocs deps not installed, but should execute
         if result.success:
-            assert "site" in result.stdout
+            # mkdocs outputs to stderr, so check combined output
+            assert "site" in result.output or "documentation" in result.output.lower()

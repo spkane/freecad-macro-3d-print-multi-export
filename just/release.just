@@ -165,6 +165,102 @@ list-tags:
 latest-tag:
     @git tag -l 'macro-multi-export-v*' | sort -V | tail -1
 
+# Show commits since last release (to help with release notes)
+changes-since:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    LATEST_TAG=$(git tag -l 'macro-multi-export-v*' | sort -V | tail -1)
+
+    if [ -z "$LATEST_TAG" ]; then
+        echo "No previous releases found. Showing all commits."
+        echo ""
+        git log --oneline -- macro/ package.xml | head -30
+    else
+        echo "Changes since $LATEST_TAG:"
+        echo ""
+        git log --oneline "$LATEST_TAG"..HEAD -- macro/ package.xml
+    fi
+
+# Show release status (unreleased changes and version info)
+status:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    echo "=========================================="
+    echo "Release Status"
+    echo "=========================================="
+    echo ""
+
+    # Get current version
+    CURRENT_VERSION=$(grep -o '<version>[^<]*</version>' {{project_root}}/package.xml | head -1 | sed 's/<[^>]*>//g')
+    LATEST_TAG=$(git tag -l 'macro-multi-export-v*' | sort -V | tail -1)
+    LATEST_VERSION="${LATEST_TAG#macro-multi-export-v}"
+
+    echo "Current version (package.xml): $CURRENT_VERSION"
+    echo "Latest release tag:            ${LATEST_TAG:-none}"
+    echo ""
+
+    # Count unreleased changes
+    if [ -z "$LATEST_TAG" ]; then
+        CHANGES=$(git log --oneline -- macro/ package.xml | wc -l | tr -d ' ')
+        echo "Commits since initial: $CHANGES"
+    else
+        CHANGES=$(git log --oneline "$LATEST_TAG"..HEAD -- macro/ package.xml | wc -l | tr -d ' ')
+        echo "Commits since last release: $CHANGES"
+    fi
+
+    if [ "$CHANGES" -gt 0 ]; then
+        echo ""
+        echo "Run 'just release::changes-since' to see the changes."
+    else
+        echo ""
+        echo "No unreleased changes."
+    fi
+
+# Draft release notes from conventional commits since last release
+draft-notes:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    LATEST_TAG=$(git tag -l 'macro-multi-export-v*' | sort -V | tail -1)
+
+    echo "# Draft Release Notes for Multi Export"
+    echo ""
+
+    if [ -z "$LATEST_TAG" ]; then
+        echo "No previous releases found. Showing all commits."
+        echo ""
+        REV_RANGE="HEAD"
+    else
+        echo "Changes since: $LATEST_TAG"
+        echo ""
+        REV_RANGE="${LATEST_TAG}..HEAD"
+    fi
+
+    PATHS="macro/ package.xml"
+
+    echo "## Added"
+    echo ""
+    git log --oneline "$REV_RANGE" -- $PATHS 2>/dev/null | grep -iE "^[a-f0-9]+ feat(\(|:)" | sed -E 's/^[a-f0-9]+ /- /' || true
+    echo ""
+
+    echo "## Changed"
+    echo ""
+    git log --oneline "$REV_RANGE" -- $PATHS 2>/dev/null | grep -iE "^[a-f0-9]+ (refactor|perf|style)(\(|:)" | sed -E 's/^[a-f0-9]+ /- /' || true
+    echo ""
+
+    echo "## Fixed"
+    echo ""
+    git log --oneline "$REV_RANGE" -- $PATHS 2>/dev/null | grep -iE "^[a-f0-9]+ fix(\(|:)" | sed -E 's/^[a-f0-9]+ /- /' || true
+    echo ""
+
+    echo "---"
+    echo ""
+    echo "## All Commits (chronological)"
+    echo ""
+    git log --oneline "$REV_RANGE" -- $PATHS 2>/dev/null | sed -E 's/^[a-f0-9]+ /- /' || echo "(no commits)"
+
 # =============================================================================
 # FreeCAD Wiki Update Helpers
 # =============================================================================

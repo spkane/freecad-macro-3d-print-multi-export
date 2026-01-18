@@ -1,1 +1,1 @@
-"""Just command tests for FreeCAD macro."""
+"""Just command tests package."""

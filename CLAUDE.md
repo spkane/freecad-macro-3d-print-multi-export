@@ -34,7 +34,8 @@ freecad-macro-3d-print-multi-export/
 │   └── __init__.py           # Package init
 ├── tests/
 │   ├── unit/                 # pytest unit tests (no FreeCAD required)
-│   └── freecad/              # FreeCAD integration tests
+│   ├── freecad/              # FreeCAD integration tests
+│   └── just_commands/        # Just command tests
 ├── .pre-commit-config.yaml   # Pre-commit hooks
 ├── justfile                  # Task runner
 ├── mkdocs.yaml               # Documentation config
@@ -138,6 +139,7 @@ just list-all
 # List commands in specific modules
 just list-dev           # Development utilities
 just list-documentation # Documentation commands
+just list-install       # Installation commands
 just list-quality       # Code quality commands
 just list-release       # Release commands
 just list-testing       # Test commands
@@ -229,8 +231,11 @@ tests/
 ├── conftest.py           # Shared pytest fixtures
 ├── unit/                 # Unit tests (pytest, no FreeCAD required)
 │   └── test_core.py      # Tests for multi_export_core.py
-└── freecad/              # FreeCAD integration tests
-    └── test_multi_export.py  # Tests run inside FreeCAD
+├── freecad/              # FreeCAD integration tests
+│   └── test_multi_export.py  # Tests run inside FreeCAD
+└── just_commands/        # Just command tests
+    ├── conftest.py       # Shared fixtures
+    └── test_*.py         # Tests for each just module
 ```
 
 ### Running Tests
@@ -245,6 +250,18 @@ just testing::freecad        # Uses freecadcmd or freecad -c
 
 # Run all tests
 just testing::all
+
+# Run just command syntax tests (fast)
+just testing::just-syntax
+
+# Run just command runtime tests
+just testing::just-runtime
+
+# Run all just command tests
+just testing::just-all
+
+# Run full release test suite
+just testing::release-test
 ```
 
 ### Writing Tests
@@ -261,6 +278,12 @@ just testing::all
 - Run inside FreeCAD using `freecad -c tests/freecad/test_multi_export.py`
 - Use Python's unittest framework (compatible with FreeCAD's test runner)
 
+**Just command tests** (in `tests/just_commands/`):
+
+- Verify all just commands work correctly
+- Syntax tests use `--dry-run` to validate parsing
+- Runtime tests actually execute commands
+
 ---
 
 ## Documentation
@@ -273,6 +296,23 @@ just documentation::serve  # Serve locally at http://localhost:8000
 ```
 
 Documentation is built with MkDocs and deployed to GitHub Pages.
+
+### GitHub Pages Deployment
+
+This repo uses **artifact-based deployment** (`actions/deploy-pages@v4`), which does **not** require a `gh-pages` branch.
+
+**Initial Setup** (one-time):
+
+1. Go to repo **Settings** → **Pages**
+2. Under **Build and deployment** → **Source**, select **"GitHub Actions"**
+3. Save
+
+**Deployment triggers**:
+
+- Push to `main` branch (if docs paths changed)
+- Manual trigger via **Actions** → **Documentation** → **Run workflow**
+
+The workflow builds MkDocs and deploys directly via GitHub's artifact system. No branch management required.
 
 ---
 
@@ -290,7 +330,26 @@ Documentation is built with MkDocs and deployed to GitHub Pages.
 
 ## Macro Installation
 
-The macro can be installed in FreeCAD via:
+### Quick Install (via just commands)
+
+The easiest way to install the macro locally:
+
+```bash
+just install::macro     # Install macro to FreeCAD
+just install::status    # Check installation status
+just install::uninstall # Remove macro from FreeCAD
+just install::cleanup   # Alias for uninstall
+```
+
+The install commands automatically detect FreeCAD's location based on your OS:
+
+- **macOS**: `~/Library/Application Support/FreeCAD/`
+- **Linux**: `~/.local/share/FreeCAD/`
+- **Windows**: `%APPDATA%/FreeCAD/`
+
+For FreeCAD 1.x+, the commands also detect versioned directories (e.g., `v1-1`, `v1-2`).
+
+### Other Installation Methods
 
 1. **Addon Manager**: Search for "Multi Export" in FreeCAD's Addon Manager
 2. **Manual**: Copy the `macro/Multi_Export/` directory to FreeCAD's Macro folder
@@ -301,21 +360,58 @@ When installed via Addon Manager, the full package (with modules) is installed. 
 
 ## Release Process
 
-Releases are created by pushing git tags:
+Releases follow a two-step process: bump, then tag.
+
+### Step 1: Bump Version
 
 ```bash
-# Create a release tag (triggers GitHub workflow)
-just release::tag 0.6.2
+# Update version in all source files
+just release::bump 1.0.0
 
-# View release tags
-just release::list-tags
+# Review changes
+git diff
+
+# Commit
+git add -A && git commit -m "chore: bump to 1.0.0"
 ```
 
-The release workflow:
+The bump command updates:
 
-1. Validates tag format
-2. Updates version in source files
-3. Creates GitHub Release with macro archive
+- `macro/Multi_Export/MultiExport.FCMacro` (`__version__`)
+- `package.xml` (`<version>` and `<date>`)
+- `macro/Multi_Export/wiki-source.txt` (`|Version=` and `|Date=`)
+
+### Step 2: Create Release Tag
+
+```bash
+# Create and push the tag (triggers GitHub workflow)
+just release::tag 1.0.0
+```
+
+The tag command:
+
+1. Verifies version in source files matches the tag
+2. Creates annotated git tag
+3. Pushes tag to origin
+4. Triggers GitHub Actions release workflow
+
+### Release Commands
+
+```bash
+just release::bump 1.0.0     # Update version in source files
+just release::tag 1.0.0      # Create and push release tag
+just release::version        # Show current version
+just release::list-tags      # List all release tags
+just release::latest-tag     # Show latest release tag
+```
+
+### Update FreeCAD Wiki (After Release)
+
+```bash
+just release::wiki-diff      # Check differences from live wiki
+just release::wiki-show      # View wiki source content
+just release::wiki-update    # Copy to clipboard & open wiki edit page
+```
 
 ---
 

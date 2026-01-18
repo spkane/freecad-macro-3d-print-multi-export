@@ -101,6 +101,8 @@ class JustRunner:
             run_env.update(env)
 
         try:
+            # S603: subprocess call is safe here - we're running `just` with
+            # controlled arguments in a test context
             result = subprocess.run(  # noqa: S603
                 cmd,
                 cwd=self.project_root,
@@ -119,7 +121,13 @@ class JustRunner:
                 success=result.returncode == 0,
             )
         except subprocess.TimeoutExpired as e:
-            stdout_val = str(e.stdout) if e.stdout else ""
+            # Normalize e.stdout to a string: decode if bytes, use empty string if None
+            if e.stdout is None:
+                stdout_val = ""
+            elif isinstance(e.stdout, bytes):
+                stdout_val = e.stdout.decode("utf-8", errors="replace")
+            else:
+                stdout_val = str(e.stdout)
             return JustResult(
                 command=command,
                 returncode=-1,
@@ -143,6 +151,8 @@ class JustRunner:
         """
         cmd: list[str] = [self._just_path, "--dry-run", command, *args]
 
+        # S603: subprocess call is safe here - we're running `just` with
+        # controlled arguments in a test context
         result = subprocess.run(  # noqa: S603
             cmd,
             cwd=self.project_root,
@@ -165,6 +175,8 @@ class JustRunner:
         if module:
             cmd.append(module)
 
+        # S603: subprocess call is safe here - we're running `just` with
+        # controlled arguments in a test context
         result = subprocess.run(  # noqa: S603
             cmd,
             cwd=self.project_root,
@@ -205,10 +217,6 @@ def pytest_configure(config: pytest.Config) -> None:
     """Register custom pytest markers."""
     config.addinivalue_line("markers", "just_syntax: marks tests as just syntax checks (dry-run only)")
     config.addinivalue_line("markers", "just_runtime: marks tests as just runtime tests (actually execute)")
-    config.addinivalue_line(
-        "markers",
-        "just_release: marks tests as release command tests (require special handling)",
-    )
     config.addinivalue_line("markers", "requires_freecad: marks tests that require FreeCAD to be installed")
     config.addinivalue_line(
         "markers",
@@ -219,31 +227,37 @@ def pytest_configure(config: pytest.Config) -> None:
 # Cleanup fixtures for release tests
 @pytest.fixture
 def git_tag_cleanup() -> Generator[list[str], None, None]:
-    """Fixture that tracks and cleans up git tags created during tests."""
+    """Fixture that tracks and cleans up git tags created during tests.
+
+    Usage:
+        def test_create_tag(git_tag_cleanup):
+            git_tag_cleanup.append("test-tag-v0.0.0")
+            # Create the tag...
+            # Tag will be deleted after test
+    """
     tags_to_cleanup: list[str] = []
     yield tags_to_cleanup
 
     # Cleanup: delete all tracked tags (only test- prefixed tags for safety)
     for tag in tags_to_cleanup:
+        # Safety guard: only delete tags starting with "test-" to prevent
+        # accidental deletion of real release tags
         if not tag.startswith("test-"):
             import warnings
 
             warnings.warn(
                 f"Skipping cleanup of non-test tag '{tag}' - "
-                "only 'test-' prefixed tags are allowed in git_tag_cleanup fixture.",
+                "only 'test-' prefixed tags are allowed in git_tag_cleanup fixture. "
+                "This may indicate a bug in the test.",
                 UserWarning,
                 stacklevel=1,
             )
             continue
 
+        # Delete local tag
+        # S603, S607: git is a well-known command, safe in test cleanup context
         subprocess.run(  # noqa: S603
             ["git", "tag", "-d", tag],  # noqa: S607
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            check=False,
-        )
-        subprocess.run(  # noqa: S603
-            ["git", "push", "origin", "--delete", tag],  # noqa: S607
             cwd=PROJECT_ROOT,
             capture_output=True,
             check=False,

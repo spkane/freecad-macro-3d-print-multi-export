@@ -71,13 +71,13 @@ check-deps:
 # Just Command Tests
 # =============================================================================
 
-# Run just command syntax tests (validates justfile syntax)
+# Run just command syntax tests (fast, validates all commands parse correctly)
 just-syntax:
     cd {{project_root}} && pytest tests/just_commands -m "just_syntax" -v
 
-# Run just command runtime tests (executes commands)
+# Run just command runtime tests (slower, actually executes commands)
 just-runtime:
-    cd {{project_root}} && pytest tests/just_commands -m "just_runtime" -v
+    cd {{project_root}} && pytest tests/just_commands -m "just_runtime and not slow" -v
 
 # Run all just command tests
 just-all:
@@ -100,6 +100,15 @@ release-test:
 
     # Track overall test results
     TESTS_PASSED=true
+    declare -a FAILED_NAMES=()
+    declare -a FAILED_COMMANDS=()
+
+    # Helper function to record test failure
+    record_failure() {
+        TESTS_PASSED=false
+        FAILED_NAMES+=("$1")
+        FAILED_COMMANDS+=("$2")
+    }
 
     # -------------------------------------------------------------------------
     # Step 1: Unit Tests with Coverage
@@ -115,7 +124,7 @@ release-test:
     else
         echo ""
         echo "✗ Unit tests FAILED"
-        TESTS_PASSED=false
+        record_failure "Unit tests with coverage" "just testing::cov"
     fi
     echo ""
 
@@ -133,7 +142,7 @@ release-test:
     else
         echo ""
         echo "✗ Just command tests FAILED"
-        TESTS_PASSED=false
+        record_failure "Just command tests" "just testing::just-all"
     fi
     echo ""
 
@@ -145,13 +154,13 @@ release-test:
     echo "============================================================"
     echo ""
 
-    if pre-commit run --all-files; then
+    if just quality::check; then
         echo ""
         echo "✓ Pre-commit checks passed"
     else
         echo ""
         echo "✗ Pre-commit checks FAILED"
-        TESTS_PASSED=false
+        record_failure "Pre-commit checks" "just quality::check"
     fi
     echo ""
 
@@ -170,6 +179,16 @@ release-test:
         echo "  1. Update RELEASE_NOTES.md with version section"
         echo "  2. Create release tag: just release::tag <version>"
     else
-        echo "✗ SOME TESTS FAILED - Please fix before releasing"
+        echo "✗ SOME TESTS FAILED - Cannot proceed with release"
+        echo ""
+        echo "Failed tests:"
+        for i in "${!FAILED_NAMES[@]}"; do
+            echo "  ✗ ${FAILED_NAMES[$i]}"
+        done
+        echo ""
+        echo "To recreate failures, run:"
+        for i in "${!FAILED_COMMANDS[@]}"; do
+            echo "  ${FAILED_COMMANDS[$i]}"
+        done
         exit 1
     fi

@@ -43,7 +43,7 @@ test: (testing::unit)
     @echo "Tests complete!"
 
 # Run unit tests with coverage
-test-cov: (testing::unit-cov)
+test-cov: (testing::cov)
     @echo "Coverage report generated!"
 
 # =============================================================================

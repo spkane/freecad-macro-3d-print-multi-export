@@ -1,6 +1,6 @@
 [project]
 name = "freecad-macro-3d-print-multi-export"
-version = "0.6.1"
+version = "0.6.2"
 description = "A FreeCAD macro that exports selected objects to multiple file formats simultaneously"
 readme = "README.md"
 license = { text = "MIT" }

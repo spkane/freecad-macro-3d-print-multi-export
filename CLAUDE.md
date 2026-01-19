@@ -377,7 +377,7 @@ git add -A && git commit -m "chore: bump to 1.0.0"
 
 The bump command updates:
 
-- `macro/Multi_Export/MultiExport.FCMacro` (`__version__`)
+- `macro/Multi_Export/MultiExport.FCMacro` (`__Version__` and `__Date__`)
 - `package.xml` (`<version>` and `<date>`)
 - `macro/Multi_Export/wiki-source.txt` (`|Version=` and `|Date=`)
 

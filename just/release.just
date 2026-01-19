@@ -38,12 +38,13 @@ bump version:
     echo "Bumping Multi Export macro to version: $VERSION (date: $TODAY)"
     echo ""
 
-    # Update __Version__ in the macro file (FreeCAD uses capital V)
+    # Update __Version__ and __Date__ in the macro file (FreeCAD uses capital V)
     MACRO_FILE="{{project_root}}/macro/Multi_Export/MultiExport.FCMacro"
     if [ -f "$MACRO_FILE" ]; then
         sed 's/^__Version__ = "[^"]*"/__Version__ = "'"$VERSION"'"/' "$MACRO_FILE" > "$MACRO_FILE.tmp" && mv "$MACRO_FILE.tmp" "$MACRO_FILE"
+        sed 's/^__Date__ = "[^"]*"/__Date__ = "'"$TODAY"'"/' "$MACRO_FILE" > "$MACRO_FILE.tmp" && mv "$MACRO_FILE.tmp" "$MACRO_FILE"
         echo "Updated $MACRO_FILE:"
-        grep "__Version__" "$MACRO_FILE" | head -1
+        grep -E "^__Version__|^__Date__" "$MACRO_FILE" | head -2
     else
         echo "WARNING: File not found: $MACRO_FILE"
     fi

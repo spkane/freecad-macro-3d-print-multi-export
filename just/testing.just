@@ -187,6 +187,8 @@ release-test:
         echo "     - Breaking changes (if any)"
         echo "     - New features and improvements"
         echo ""
+        echo "   TIP: Use 'just release::draft-notes' to generate a draft from commits."
+        echo ""
         echo "2. BUMP VERSIONS:"
         echo "   just release::bump <version>"
         echo "   Example: just release::bump 1.2.0"

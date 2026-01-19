@@ -18,7 +18,7 @@
     <url type="repository" branch="main">https://github.com/spkane/freecad-macro-3d-print-multi-export</url>
     <url type="bugtracker">https://github.com/spkane/freecad-macro-3d-print-multi-export/issues</url>
     <url type="readme">https://github.com/spkane/freecad-macro-3d-print-multi-export/blob/main/README.md</url>
-    <url type="documentation">https://github.com/spkane/freecad-macro-3d-print-multi-export#readme</url>
+    <url type="documentation">https://spkane.github.io/freecad-macro-3d-print-multi-export/</url>
 
     <tag>macro</tag>
     <tag>export</tag>

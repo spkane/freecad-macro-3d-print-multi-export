@@ -47,10 +47,13 @@ _freecad-dirs:
     # Find the latest versioned directory if present
     VERSIONED_DIR=""
     if [[ -d "$FREECAD_BASE" ]]; then
-        # Use sort -V for proper version sorting (handles v1-10 > v1-2 correctly)
-        LATEST_VERSION=$(ls -d "$FREECAD_BASE"/v*-* 2>/dev/null | sort -V | tail -n 1)
-        if [[ -n "$LATEST_VERSION" && -d "$LATEST_VERSION" ]]; then
-            VERSIONED_DIR="$LATEST_VERSION"
+        # Use compgen to safely check if glob matches exist (avoids pipefail issues)
+        if compgen -G "$FREECAD_BASE"/v*-* > /dev/null; then
+            # Use sort -V for proper version sorting (handles v1-10 > v1-2 correctly)
+            LATEST_VERSION=$(ls -d "$FREECAD_BASE"/v*-* | sort -V | tail -n 1)
+            if [[ -n "$LATEST_VERSION" && -d "$LATEST_VERSION" ]]; then
+                VERSIONED_DIR="$LATEST_VERSION"
+            fi
         fi
     fi
 

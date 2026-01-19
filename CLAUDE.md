@@ -328,24 +328,24 @@ The workflow builds MkDocs and deploys directly via GitHub's artifact system. No
 
 ---
 
-## Macro Installation
+## Addon Installation
 
 ### Quick Install (via just commands)
 
-The easiest way to install the macro locally:
+The easiest way to install the addon locally (mimics FreeCAD Addon Manager):
 
 ```bash
-just install::macro     # Install macro to FreeCAD
+just install::addon     # Install addon to FreeCAD Mod directory
 just install::status    # Check installation status
-just install::uninstall # Remove macro from FreeCAD
+just install::uninstall # Remove addon from FreeCAD
 just install::cleanup   # Alias for uninstall
 ```
 
 The install commands automatically detect FreeCAD's location based on your OS:
 
-- **macOS**: `~/Library/Application Support/FreeCAD/`
-- **Linux**: `~/.local/share/FreeCAD/`
-- **Windows**: `%APPDATA%/FreeCAD/`
+- **macOS**: `~/Library/Application Support/FreeCAD/Mod/`
+- **Linux**: `~/.local/share/FreeCAD/Mod/`
+- **Windows**: `%APPDATA%/FreeCAD/Mod/`
 
 For FreeCAD 1.x+, the commands also detect versioned directories (e.g., `v1-1`, `v1-2`).
 

@@ -4,6 +4,14 @@
 
 Release notes for changes between v0.6.1 and v0.6.2.
 
+### Added
+
+- **Save preferences**: New "Save choices as defaults" checkbox saves format selections and mesh settings
+  - Settings persist across FreeCAD sessions using FreeCAD's parameter system
+  - Saves: selected export formats, mesh tolerance, and mesh deflection
+  - Objects to export, filename, and directory are intentionally NOT saved (context-specific)
+  - Stored in `User parameter:BaseApp/Preferences/Macros/MultiExport`
+
 ### Changed
 
 - **Proper FreeCAD Addon**: Release being added to <https://github.com/spkane/FreeCAD-addons>.
@@ -15,8 +23,16 @@ Release notes for changes between v0.6.1 and v0.6.2.
   - `multi_export_fc.py`: FreeCAD-specific export code
   - `__init__.py`: Package initialization
   - FCMacro now imports from modules when available, falls back to embedded code for standalone use
+- **Addon Manager compatible layout**: Restructured installation to work with FreeCAD Addon Manager
+  - Installs to `Mod/` directory with `package.xml` metadata
+  - Creates symlink in `Macro/` directory for macro menu visibility
+  - Uses `os.path.realpath()` to resolve symlinks for proper module discovery
 - **Code modernization**: Added `dataclasses` import and `sys.path` manipulation for module discovery
 - **Improved test infrastructure**: Added comprehensive just command tests and pytest fixtures
+
+### Fixed
+
+- **PySide6 compatibility**: Changed `dialog.exec_()` to `dialog.exec()` to fix deprecation warning
 
 ## Version 0.6.1 (2026-01-12)
 

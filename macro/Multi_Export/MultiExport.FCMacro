@@ -49,7 +49,8 @@ from PySide import QtGui
 # Try to import from modules (when installed via Addon Manager with full package)
 # Fall back to embedded definitions (when just the .FCMacro file is copied)
 _USE_MODULES = False
-_macro_dir = os.path.dirname(os.path.abspath(__file__))
+# Use realpath to resolve symlinks (important when FCMacro is symlinked from Macro dir)
+_macro_dir = os.path.dirname(os.path.realpath(__file__))
 if _macro_dir not in sys.path:
     sys.path.insert(0, _macro_dir)
 
@@ -254,6 +255,9 @@ if not _USE_MODULES:
 # End of embedded definitions
 # =============================================================================
 
+# Parameter group for saving user preferences
+_PARAM_GROUP = "User parameter:BaseApp/Preferences/Macros/MultiExport"
+
 
 class MultiExportDialog(QtGui.QDialog):
     """Dialog for configuring multi-format export options."""
@@ -273,6 +277,7 @@ class MultiExportDialog(QtGui.QDialog):
         self.setModal(True)
         self.setMinimumWidth(500)
         self.setup_ui()
+        self._load_saved_defaults()
         self.populate_defaults()
 
     def setup_ui(self):
@@ -395,15 +400,24 @@ class MultiExportDialog(QtGui.QDialog):
         self.progress_bar.setVisible(False)
         layout.addWidget(self.progress_bar)
 
-        # Buttons
+        # Save defaults checkbox and buttons
+        bottom_layout = QtGui.QHBoxLayout()
+        self.save_defaults_checkbox = QtGui.QCheckBox("Save choices as defaults")
+        self.save_defaults_checkbox.setToolTip(
+            "Save current format selections and mesh settings as defaults for future use"
+        )
+        bottom_layout.addWidget(self.save_defaults_checkbox)
+        bottom_layout.addStretch()
+
         button_box = QtGui.QDialogButtonBox()
         self.export_btn = button_box.addButton("Export", QtGui.QDialogButtonBox.AcceptRole)
         button_box.addButton(QtGui.QDialogButtonBox.Cancel)
 
-        button_box.accepted.connect(self.accept)
+        button_box.accepted.connect(self._on_accept)
         button_box.rejected.connect(self.reject)
 
-        layout.addWidget(button_box)
+        bottom_layout.addWidget(button_box)
+        layout.addLayout(bottom_layout)
         self.setLayout(layout)
 
     def populate_defaults(self):
@@ -512,6 +526,67 @@ class MultiExportDialog(QtGui.QDialog):
         self.progress_bar.setValue(value)
         QtGui.QApplication.processEvents()
 
+    def _on_accept(self):
+        """Handle accept button click, saving defaults if requested."""
+        if self.save_defaults_checkbox.isChecked():
+            self._save_defaults()
+        self.accept()
+
+    def _load_saved_defaults(self):
+        """Load saved user preferences from FreeCAD parameters.
+
+        Only format selections and mesh settings are saved/restored. The following
+        are intentionally NOT saved as they are context-specific:
+        - Objects to export
+        - Output directory
+        - Base filename
+        """
+        try:
+            params = App.ParamGet(_PARAM_GROUP)
+
+            # Load saved format selections
+            saved_formats = params.GetString("SelectedFormats", "")
+            if saved_formats:
+                saved_list = saved_formats.split(",")
+                for ext, checkbox in self.format_checkboxes.items():
+                    checkbox.setChecked(ext in saved_list)
+
+            # Load mesh settings
+            if params.GetBool("HasSavedSettings", False):
+                self.tolerance_spin.setValue(params.GetFloat("MeshTolerance", 0.1))
+                self.deflection_spin.setValue(params.GetFloat("MeshDeflection", 0.1))
+
+        except Exception:  # nosec B110
+            # If loading fails, just use built-in defaults
+            pass
+
+    def _save_defaults(self):
+        """Save current format and mesh settings as user defaults.
+
+        Only format selections and mesh settings are saved. The following
+        are intentionally NOT saved as they are context-specific:
+        - Objects to export
+        - Output directory
+        - Base filename
+        """
+        try:
+            params = App.ParamGet(_PARAM_GROUP)
+
+            # Save selected formats
+            selected = self.get_selected_formats()
+            params.SetString("SelectedFormats", ",".join(selected))
+
+            # Save mesh settings
+            params.SetFloat("MeshTolerance", self.tolerance_spin.value())
+            params.SetFloat("MeshDeflection", self.deflection_spin.value())
+
+            # Mark that we have saved settings
+            params.SetBool("HasSavedSettings", True)
+
+            App.Console.PrintMessage("Multi Export: Preferences saved.\n")
+        except Exception as e:
+            App.Console.PrintWarning(f"Multi Export: Could not save preferences: {e}\n")
+
 
 def main():
     """Main macro entry point."""
@@ -547,7 +622,7 @@ def main():
     # Show dialog
     dialog = MultiExportDialog(exportable)
 
-    if dialog.exec_() != QtGui.QDialog.Accepted:
+    if dialog.exec() != QtGui.QDialog.Accepted:
         return
 
     params = dialog.get_export_parameters()

@@ -21,7 +21,7 @@ class TestInstallSyntax:
     """Syntax validation tests for install module commands."""
 
     INSTALL_COMMANDS: ClassVar[list[str]] = [
-        "install::macro",
+        "install::addon",
         "install::uninstall",
         "install::cleanup",
         "install::status",

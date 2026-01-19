@@ -2,6 +2,12 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![FreeCAD](https://img.shields.io/badge/FreeCAD-0.21+-blue.svg)](https://www.freecadweb.org/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776ab.svg)](https://www.python.org/)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://spkane.github.io/freecad-macro-3d-print-multi-export/)
+
+[![Tests](https://github.com/spkane/freecad-macro-3d-print-multi-export/actions/workflows/tests.yaml/badge.svg)](https://github.com/spkane/freecad-macro-3d-print-multi-export/actions/workflows/tests.yaml)
+[![Pre-commit](https://github.com/spkane/freecad-macro-3d-print-multi-export/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/spkane/freecad-macro-3d-print-multi-export/actions/workflows/pre-commit.yaml)
+[![CodeQL](https://github.com/spkane/freecad-macro-3d-print-multi-export/actions/workflows/codeql.yaml/badge.svg)](https://github.com/spkane/freecad-macro-3d-print-multi-export/actions/workflows/codeql.yaml)
 
 ![Macro Icon](macro/Multi_Export/MultiExport.svg)
 

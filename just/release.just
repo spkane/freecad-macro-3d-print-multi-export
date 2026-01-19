@@ -38,12 +38,13 @@ bump version:
     echo "Bumping Multi Export macro to version: $VERSION (date: $TODAY)"
     echo ""
 
-    # Update __version__ in the macro file
+    # Update __Version__ and __Date__ in the macro file (FreeCAD uses capital V)
     MACRO_FILE="{{project_root}}/macro/Multi_Export/MultiExport.FCMacro"
     if [ -f "$MACRO_FILE" ]; then
-        sed 's/^__version__ = "[^"]*"/__version__ = "'"$VERSION"'"/' "$MACRO_FILE" > "$MACRO_FILE.tmp" && mv "$MACRO_FILE.tmp" "$MACRO_FILE"
+        sed 's/^__Version__ = "[^"]*"/__Version__ = "'"$VERSION"'"/' "$MACRO_FILE" > "$MACRO_FILE.tmp" && mv "$MACRO_FILE.tmp" "$MACRO_FILE"
+        sed 's/^__Date__ = "[^"]*"/__Date__ = "'"$TODAY"'"/' "$MACRO_FILE" > "$MACRO_FILE.tmp" && mv "$MACRO_FILE.tmp" "$MACRO_FILE"
         echo "Updated $MACRO_FILE:"
-        grep "__version__" "$MACRO_FILE" | head -1
+        grep -E "^__Version__|^__Date__" "$MACRO_FILE" | head -2
     else
         echo "WARNING: File not found: $MACRO_FILE"
     fi
@@ -103,10 +104,10 @@ tag version:
     # Verify version in source files matches tag version
     echo "Verifying version in source files..."
 
-    # Check macro file
+    # Check macro file (FreeCAD uses capital V: __Version__)
     MACRO_FILE="{{project_root}}/macro/Multi_Export/MultiExport.FCMacro"
     if [ -f "$MACRO_FILE" ]; then
-        MACRO_VERSION=$(grep -o '__version__ = "[^"]*"' "$MACRO_FILE" | head -1 | cut -d'"' -f2)
+        MACRO_VERSION=$(grep -o '__Version__ = "[^"]*"' "$MACRO_FILE" | head -1 | cut -d'"' -f2)
         if [ "$MACRO_VERSION" != "$VERSION" ]; then
             echo "ERROR: Version mismatch in $MACRO_FILE"
             echo "  Expected: $VERSION"
@@ -199,6 +200,7 @@ status:
 
     echo "Current version (package.xml): $CURRENT_VERSION"
     echo "Latest release tag:            ${LATEST_TAG:-none}"
+    echo "Latest release version:        ${LATEST_VERSION:-none}"
     echo ""
 
     # Count unreleased changes

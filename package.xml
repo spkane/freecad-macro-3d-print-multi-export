@@ -5,8 +5,8 @@
     <description>Export selected FreeCAD objects to multiple file formats (STL, STEP, 3MF, OBJ, IGES, BREP, PLY, AMF) simultaneously with a single click.</description>
     <icon>macro/Multi_Export/MultiExport.svg</icon>
 
-    <version>0.6.1</version>
-    <date>2026-01-12</date>
+    <version>0.6.2</version>
+    <date>2026-01-18</date>
 
     <maintainer email="spkane@gmail.com">Sean P. Kane</maintainer>
     <author email="spkane@gmail.com">Sean P. Kane</author>
@@ -32,8 +32,8 @@
 
         <macro>
             <name>Multi Export</name>
-            <version>0.6.1</version>
-            <date>2026-01-12</date>
+            <version>0.6.2</version>
+            <date>2026-01-18</date>
             <description>Export selected FreeCAD objects to multiple file formats (STL, STEP, 3MF, OBJ, IGES, BREP, PLY, AMF) simultaneously with a single click.</description>
             <subdirectory>./macro/Multi_Export/</subdirectory>
             <file>MultiExport.FCMacro</file>

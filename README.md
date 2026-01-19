@@ -12,6 +12,7 @@
 ![Macro Icon](macro/Multi_Export/MultiExport.svg)
 
 **Version:** 0.6.1
+**FreeCAD Forum:** [addon discussion post](https://forum.freecad.org/viewtopic.php?t=102291)
 
 A FreeCAD macro that exports selected objects to multiple file formats simultaneously with a single click. Supports 8 formats with smart defaults and configurable mesh quality options.
 
@@ -24,6 +25,10 @@ A FreeCAD macro that exports selected objects to multiple file formats simultane
 - **Preview Mode** - See exactly what files will be created before exporting
 - **Progress Feedback** - Real-time progress bar and status messages
 - **Batch Export** - Export multiple selected objects together
+
+## Installation Requirements / Dependencies
+
+- [FreeCAD](https://www.freecadweb.org/) 0.21+ or 1.0+
 
 ## Quick Start
 
@@ -121,7 +126,7 @@ See the [full documentation](macro/Multi_Export/README-MultiExport.md).
 
 ## Requirements
 
-- FreeCAD 0.21 or later (0.19+ may work)
+- FreeCAD 0.21 or later (0.21+ may work)
 
 ## Contributing
 

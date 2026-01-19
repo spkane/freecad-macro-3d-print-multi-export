@@ -2,8 +2,8 @@
 
 ![Macro Icon](MultiExport.svg)
 
-**Version:** 0.6.1
-**FreeCAD Version:** 0.19 or later
+**Version:** 0.6.2
+**FreeCAD Version:** 0.21 or later
 **License:** MIT
 
 > **Documentation:** [https://github.com/spkane/freecad-macro-3d-print-multi-export](https://github.com/spkane/freecad-macro-3d-print-multi-export)

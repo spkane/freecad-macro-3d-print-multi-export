@@ -2,7 +2,7 @@
 
 ![Macro Icon](https://raw.githubusercontent.com/spkane/freecad-macro-3d-print-multi-export/main/macro/Multi_Export/MultiExport.svg){ width="64" }
 
-**Version:** 0.6.2 | **License:** MIT | **FreeCAD:** 0.19+
+**Version:** 0.6.2 | **License:** MIT | **FreeCAD:** 0.21+
 
 A FreeCAD macro that exports selected objects to multiple file formats simultaneously with a single click. Supports 8 formats with smart defaults and configurable mesh quality options.
 

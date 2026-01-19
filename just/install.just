@@ -124,6 +124,13 @@ addon:
     MACRO_SYMLINK="$MACRO_DIR/MultiExport.FCMacro"
     MACRO_TARGET="$ADDON_DEST/macro/Multi_Export/MultiExport.FCMacro"
 
+    # Verify target file exists before creating symlink (avoid dangling symlinks)
+    if [[ ! -f "$MACRO_TARGET" ]]; then
+        echo "Error: Target macro file does not exist: $MACRO_TARGET"
+        echo "The addon may not have been copied correctly."
+        exit 1
+    fi
+
     # Remove existing symlink if present
     if [[ -L "$MACRO_SYMLINK" ]]; then
         rm "$MACRO_SYMLINK"

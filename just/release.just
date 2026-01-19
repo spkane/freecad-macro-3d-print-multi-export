@@ -75,6 +75,17 @@ bump version:
         echo "WARNING: File not found: $WIKI_FILE"
     fi
 
+    # Update docs/index.md version
+    DOCS_INDEX="{{project_root}}/docs/index.md"
+    if [ -f "$DOCS_INDEX" ]; then
+        sed 's/\*\*Version:\*\* [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*/**Version:** '"${VERSION}"'/' "$DOCS_INDEX" > "$DOCS_INDEX.tmp" && mv "$DOCS_INDEX.tmp" "$DOCS_INDEX"
+        echo ""
+        echo "Updated $DOCS_INDEX:"
+        grep -E "^\*\*Version:\*\*" "$DOCS_INDEX"
+    else
+        echo "WARNING: File not found: $DOCS_INDEX"
+    fi
+
     echo ""
     echo "Version bump complete!"
     echo ""
@@ -131,6 +142,21 @@ tag version:
         exit 1
     fi
     echo "✓ $PACKAGE_XML: $PKG_VERSION"
+
+    # Check docs/index.md
+    DOCS_INDEX="{{project_root}}/docs/index.md"
+    if [ -f "$DOCS_INDEX" ]; then
+        DOCS_VERSION=$(grep -o '\*\*Version:\*\* [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' "$DOCS_INDEX" | head -1 | sed 's/\*\*Version:\*\* //')
+        if [ "$DOCS_VERSION" != "$VERSION" ]; then
+            echo "ERROR: Version mismatch in $DOCS_INDEX"
+            echo "  Expected: $VERSION"
+            echo "  Found:    $DOCS_VERSION"
+            echo ""
+            echo "Run 'just release::bump $VERSION' first, then commit the changes."
+            exit 1
+        fi
+        echo "✓ $DOCS_INDEX: $DOCS_VERSION"
+    fi
 
     echo ""
     echo "Creating tag: $TAG"

@@ -1,6 +1,6 @@
 # Multi Export
 
-![Macro Icon](../macro/Multi_Export/MultiExport.svg){ width="64" }
+![Macro Icon](https://raw.githubusercontent.com/spkane/freecad-macro-3d-print-multi-export/main/macro/Multi_Export/MultiExport.svg){ width="64" }
 
 **Version:** 0.6.1 | **License:** MIT | **FreeCAD:** 0.19+
 

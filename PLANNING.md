@@ -73,9 +73,17 @@ The following checks were run against the working tree during this assessment:
 | Full `just all` | All substantive hooks passed; command failed only because `no-commit-to-branch` rejects `main` |
 | `uv.lock` resolution | Dependencies resolved, but the project entry is stale at 0.6.1 while source metadata is 0.6.2 |
 | Local FreeCAD integration suite | Not runnable: the installed weekly macOS build aborts in this execution environment with a Qt `neon` processor-feature error |
-| Official Addon Index | Repository URL not present in `FreeCAD/Addons` `Data/Index.json` on 2026-09-04 |
-| Scheduled CodeQL | Workflow state is `disabled_inactivity`; the last scheduled success was 2026-07-19 |
-| Dependency backlog | 17 open Dependabot pull requests, all development/docs/Actions dependencies |
+
+### External service status
+
+The following observations were obtained from the listed remote sources on **2026-09-04**;
+they were not checks run against this working tree.
+
+| Source | Observation |
+| --- | --- |
+| FreeCAD Addon Index (`FreeCAD/Addons` `Data/Index.json`) | Repository URL not present |
+| GitHub Actions / CodeQL | Scheduled workflow state is `disabled_inactivity`; the last scheduled success was 2026-07-19 |
+| GitHub Dependabot | 17 open pull requests, all development/docs/Actions dependencies |
 
 The local integration limitation must not be treated as a pass. Fresh FreeCAD CI and
 manual GUI UAT are required before release.

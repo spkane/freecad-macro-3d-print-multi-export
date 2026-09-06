@@ -1,4 +1,4 @@
-# CLAUDE.md - AI Assistant Guidelines for This Project
+# AGENTS.md - AI Assistant Guidelines for This Project
 
 ## Project Overview
 
@@ -16,7 +16,7 @@ Before changing the Python version in `.mise.toml` or `pyproject.toml`:
 1. The Python minor version (e.g., 3.11) **must match exactly**
 1. Using Python 3.12+ with FreeCAD that bundles Python 3.11 will crash
 
-Current requirement: **Python 3.11** (matching FreeCAD 1.0.x bundled Python)
+Current requirement: **Python 3.11**. FreeCAD **1.0.x is CI-verified**; FreeCAD **1.1.x, including 1.1.3, is the current stable target** and must pass the integration gate before being advertised as fully supported. Always confirm the installed FreeCAD bundle's Python minor version before changing this requirement.
 
 ---
 
@@ -114,17 +114,14 @@ eval "$(mise activate bash)"  # or zsh/fish
 
 ### Package Management
 
-This project uses `pip` for Python dependencies (not `uv` like the MCP server).
+This project supports both `pip` and `uv` for Python dependencies. CI uses `uv` for documentation builds, while local development can use either path. Keep the dependency extras equivalent.
 
 ```bash
-# Install development dependencies
-pip install -e ".[dev]"
+# Preferred, matches docs CI semantics
+uv sync --extra dev --extra test --extra docs
 
-# Install test dependencies
-pip install -e ".[test]"
-
-# Install documentation dependencies
-pip install -e ".[docs]"
+# pip fallback for local development
+pip install -e ".[dev,test,docs]"
 ```
 
 ### Workflow Commands (via `just`)
@@ -309,7 +306,8 @@ This repo uses **artifact-based deployment** (`actions/deploy-pages@v4`), which 
 
 **Deployment triggers**:
 
-- Push to `main` branch (if docs paths changed)
+- Push to `main` when files under `docs/**`, `mkdocs.yaml`, or `.github/workflows/docs.yaml` change
+- A published GitHub release
 - Manual trigger via **Actions** → **Documentation** → **Run workflow**
 
 The workflow builds MkDocs and deploys directly via GitHub's artifact system. No branch management required.
